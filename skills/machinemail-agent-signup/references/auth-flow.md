@@ -34,9 +34,9 @@ A `401` from `/v0` carries `WWW-Authenticate: Bearer resource_metadata="..."` po
 
 - `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer`
 - `assertion=<identity_assertion>`
-- `resource=<resource>`: the value from auth.md; for MCP, `https://mcp.machinemail.dev/mcp`.
+- `resource=<resource>` (optional): the root `resource` from `/.well-known/oauth-protected-resource`, `https://api.machinemail.dev/`. Any other value returns `invalid_target`. The root token works on both `/v0` and MCP.
 
-Access tokens last 3600 seconds. No refresh token is issued; exchange the assertion again. The assertion expires after 24 hours.
+Access tokens last 3600 seconds. No refresh token is issued; exchange the assertion again. The assertion expires after 24 hours, and never outlasts an unclaimed registration's claim window.
 
 ## Claim ceremony
 
@@ -44,15 +44,15 @@ Access tokens last 3600 seconds. No refresh token is issued; exchange the assert
 2. The response gives `user_code` (6 digits), `verification_uri`, `expires_in: 600`, `interval: 5`.
 3. Show the code and link to the human. The claim page at https://machinemail.dev/claim also accepts the code (`?code=<code>` prefills it).
 4. Poll `POST /oauth2/token` with the claim grant type from `grant_types_supported` and `claim_token=<clm_...>`, every `interval` seconds.
-5. On success, use the new token. The pre-claim tokens are revoked.
+5. On success, use the new token and store the new `identity_assertion` from the response for renewals. The pre-claim tokens and the pre-claim assertion are revoked; exchanging the old assertion returns `invalid_grant`.
 
 ## Errors
 
 `/agent/*` and `/oauth2/*` return OAuth-style errors: `{error, error_description, message}`.
 
-Poll errors: `authorization_pending` (keep polling), `slow_down` (add 5 seconds), `expired_token` (start a new claim), `access_denied` (stop).
+Poll errors: `authorization_pending` (keep polling), `slow_down` (add 5 seconds), `expired_token` (the code lapsed: start a new claim; if the 24-hour claim window closed, register again), `access_denied` (the registration was revoked: stop).
 
 ## Revocation
 
-- Agent side: `POST /oauth2/revoke` with `token=...&token_type_hint=access_token` or `token_type_hint=identity_assertion`.
+- Agent side: `POST /oauth2/revoke` with `token=<access_token>&token_type_hint=access_token` revokes one access token. Posting the identity assertion with `token_type_hint=identity_assertion` revokes the whole registration, and every token stops working.
 - Human side: `GET /v0/agent-registrations?status=pending_claim|claimed|revoked` and `DELETE /v0/agent-registrations/{agent_id}`.

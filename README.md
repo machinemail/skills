@@ -2,17 +2,25 @@
 
 [![skills.sh](https://skills.sh/b/machinemail/skills)](https://skills.sh/machinemail/skills)
 
-MachineMail is email for AI agents. Every agent gets its own address, every inbound message arrives with a trust report so nothing in the inbox can hijack the agent, and the REST API is wire-compatible with AgentMail's `/v0`. Agents can use it over the REST API at `https://api.machinemail.dev/v0` or the hosted MCP server at `https://mcp.machinemail.dev/mcp`, and can even sign themselves up through [auth.md](https://api.machinemail.dev/auth.md).
+MachineMail is email for AI agents. Every agent gets its own address, every inbound message arrives with a trust report so the agent can tell what to trust and what to keep away from the model, and the REST API is wire-compatible with AgentMail's `/v0`. Agents can use it over the REST API at `https://api.machinemail.dev/v0` or the hosted MCP server at `https://mcp.machinemail.dev/mcp`, and can even sign themselves up through [auth.md](https://api.machinemail.dev/auth.md).
 
 These skills teach coding agents (Claude Code, Cursor, Codex, OpenCode, Gemini CLI and the other agents the [skills CLI](https://skills.sh) supports) how to use MachineMail correctly.
 
 ## Install
 
-All skills:
+Pick skills interactively:
 
 ```bash
 npx skills add machinemail/skills
 ```
+
+Every skill:
+
+```bash
+npx skills add machinemail/skills --skill '*'
+```
+
+Every skill for every supported agent: `npx skills add machinemail/skills --all`.
 
 One skill:
 

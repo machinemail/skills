@@ -25,7 +25,7 @@ Source: https://machinemail.dev/docs/agents/auth-md and https://machinemail.dev/
 
 ## Claims
 
-Claim starts are rate limited (10 per 10 minutes).
+A signed-in human can look up or confirm claims (`GET` and `POST /auth/claim`) 10 times per 10 minutes; the 11th returns `429` without `Retry-After`. Starting a claim (`POST /agent/identity/claim`) has no such limit.
 
 ## After the claim
 

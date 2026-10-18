@@ -42,7 +42,7 @@ curl -s -X POST https://api.machinemail.dev/oauth2/token \
   --data-urlencode "resource=$RESOURCE"
 ```
 
-Use the `resource` value auth.md gives (for the MCP server it is `https://mcp.machinemail.dev/mcp`). The access token lasts 3600 seconds and works on both the REST API (`/v0`) and MCP. There is no refresh token: when it expires, exchange the same assertion again, until the assertion itself expires after 24 hours.
+`$RESOURCE` is the root `resource` from `https://api.machinemail.dev/.well-known/oauth-protected-resource` (`https://api.machinemail.dev/`), or leave the parameter out: it is optional, and any other value returns `invalid_target`. The same root token works on both the REST API (`/v0`) and MCP. It lasts 3600 seconds. There is no refresh token: when it expires, exchange the assertion again, until the assertion itself expires after 24 hours.
 
 ## 3. Use the inbox
 
@@ -66,10 +66,10 @@ Then poll `POST /oauth2/token` every `interval` seconds with the claim grant typ
 |---|---|
 | `authorization_pending` | The human has not finished. Keep polling. |
 | `slow_down` | Add 5 seconds to the interval. |
-| `expired_token` | The 10-minute code expired. Start a new claim. |
-| `access_denied` | The human refused. Stop. |
+| `expired_token` | The code lapsed: start a new claim. If the 24-hour claim window closed, register again. |
+| `access_denied` | The registration was revoked. Stop; register again only if the human still wants it. |
 
-A successful claim returns a token with the post-claim scopes and revokes the pre-claim tokens, so switch to the new token at once. A claimed agent can keep renewing its token for about a day. For anything longer, ask the human to create an API key at https://machinemail.dev/app/api-keys.
+A successful claim returns a token with the post-claim scopes and a new `identity_assertion`, and revokes the pre-claim tokens and the pre-claim assertion (exchanging the old one now returns `invalid_grant`). Switch to the new token at once, and store the new `identity_assertion` and use it for renewals. A claimed agent can keep renewing its token for about a day. For anything longer, ask the human to create an API key at https://machinemail.dev/app/api-keys.
 
 ## 5. Revoke
 
@@ -80,7 +80,7 @@ curl -s -X POST https://api.machinemail.dev/oauth2/revoke \
   -d "token=$ACCESS_TOKEN" -d token_type_hint=access_token
 ```
 
-(`token_type_hint=identity_assertion` revokes the assertion.) A human can list registrations with `GET /v0/agent-registrations?status=pending_claim|claimed|revoked` and remove one with `DELETE /v0/agent-registrations/{agent_id}`.
+Posting the identity assertion instead (`token_type_hint=identity_assertion`) revokes the whole registration: every token stops working. A human can list registrations with `GET /v0/agent-registrations?status=pending_claim|claimed|revoked` and remove one with `DELETE /v0/agent-registrations/{agent_id}`.
 
 ## Gotchas
 

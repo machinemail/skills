@@ -59,7 +59,7 @@ Point the agent at `https://mcp.machinemail.dev/mcp` with the MachineMail key as
 
 ## 6. Fix error handling
 
-Errors are always `{"error": {"type", "message", "param"}}` with the matching HTTP status. Branch on `error.type` (`not_found`, `validation`, `unauthorized`, `forbidden`, `rate_limited`, `conflict`, `internal`, `not_implemented`). Creates return 201. Messages accept at most 50 recipients.
+`/v0` errors are `{"error":{"type","message","param"?,"code"?}}` with the matching HTTP status. Branch on `error.type` (`validation`, `unauthorized`, `plan_limit_exceeded` (402), `forbidden`, `account_suspended` (403), `not_found`, `conflict`, `rate_limited`, `internal`, `not_implemented`). The `/agent/*` and `/oauth2/*` routes return OAuth-style errors instead: `{error, error_description, message}`. Creates return 201. Messages accept at most 50 recipients.
 
 ## 7. Use the trust report
 
