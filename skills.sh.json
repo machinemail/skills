@@ -1,0 +1,16 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "Email for agents",
+      "description": "Give an agent its own inbox, send and receive mail, and handle inbound email safely with trust reports.",
+      "skills": ["machinemail", "machinemail-mcp"]
+    },
+    {
+      "title": "Getting set up",
+      "description": "Let an agent sign itself up, or move an existing AgentMail integration over.",
+      "skills": ["machinemail-agent-signup", "machinemail-agentmail-migration"]
+    }
+  ],
+  "notGrouped": "bottom"
+}
