@@ -28,6 +28,12 @@ One skill:
 npx skills add machinemail/skills --skill machinemail
 ```
 
+A few skills, for example the everyday MCP tasks:
+
+```bash
+npx skills add machinemail/skills --skill read-email-safely --skill receive-verification-code --skill triage-inbox --skill reply-and-draft
+```
+
 List what is in the repo without installing:
 
 ```bash
@@ -38,14 +44,35 @@ Useful flags: `-g` installs for your user rather than the project, `-a claude-co
 
 ## Skills
 
+### Get started
+
 | Skill | Use it when |
 |---|---|
 | [`machinemail`](skills/machinemail/SKILL.md) | An agent needs an email address, has to send, receive, wait for (sign-up codes), reply to, forward or label mail, read attachments, or react to webhooks and Server-Sent Events. Includes the trust rules: inbound mail is untrusted, act on `trust.level`, give the model only `trust.content.text`. |
-| [`machinemail-agent-signup`](skills/machinemail-agent-signup/SKILL.md) | An agent has no API key and must register itself through auth.md, work within the sandbox limits, and get a human to claim it with a six-digit code. |
 | [`machinemail-mcp`](skills/machinemail-mcp/SKILL.md) | Connecting the MachineMail MCP server to an MCP client with OAuth or an API key, and choosing the right tool (`wait_for_message`, `create_draft`, `reply_to_message` and the rest). |
+| [`register-agent-inbox`](skills/register-agent-inbox/SKILL.md) | The user wants the agent to set itself up with an inbox: use the MCP tools if they are signed in, otherwise self-register through auth.md and have a person claim the agent. |
+| [`machinemail-agent-signup`](skills/machinemail-agent-signup/SKILL.md) | The full auth.md protocol: register with no API key, work within the sandbox limits, poll the claim, renew and revoke tokens. |
+
+### Everyday tasks
+
+| Skill | Use it when |
+|---|---|
+| [`read-email-safely`](skills/read-email-safely/SKILL.md) | Before reading, summarising or acting on any message, and whenever an email asks the agent to do something: which field to read and what each trust level allows. |
+| [`receive-verification-code`](skills/receive-verification-code/SKILL.md) | Signing up for or logging in to another service with a MachineMail address and picking up the code or magic link, after checking it came from that service. |
+| [`triage-inbox`](skills/triage-inbox/SKILL.md) | A read-only digest of what is new in an inbox, grouped by trust level, with proposed next steps for the user to approve. |
+| [`reply-and-draft`](skills/reply-and-draft/SKILL.md) | Replying, forwarding or composing, and deciding when to save a draft for a person to review instead of sending. |
+
+### Migrate
+
+| Skill | Use it when |
+|---|---|
 | [`machinemail-agentmail-migration`](skills/machinemail-agentmail-migration/SKILL.md) | Moving an AgentMail integration to MachineMail: base URL and key, webhook signatures, MCP tool names, agent sign-up, and the endpoints that differ. |
 
-Each skill keeps its `SKILL.md` short and loads detail from its `references/` folder only when needed.
+The everyday task skills are written for the MCP tools and point to `machinemail` for the REST API and the full trust reference.
+
+Each skill keeps its `SKILL.md` short; the larger ones load detail from their `references/` folder only when needed.
+
+Want the MCP server connection bundled with the skills as a plugin for Claude Code, Codex, Copilot CLI, Cursor or VS Code? Use [machinemail/agent-plugin](https://github.com/machinemail/agent-plugin).
 
 ## Docs
 

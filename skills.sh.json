@@ -2,14 +2,19 @@
   "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
   "groupings": [
     {
-      "title": "Email for agents",
-      "description": "Give an agent its own inbox, send and receive mail, and handle inbound email safely with trust reports.",
-      "skills": ["machinemail", "machinemail-mcp"]
+      "title": "Get started",
+      "description": "Give an agent its own MachineMail inbox over the REST API or MCP, or let it sign itself up and have a person claim it.",
+      "skills": ["machinemail", "machinemail-mcp", "register-agent-inbox", "machinemail-agent-signup"]
     },
     {
-      "title": "Getting set up",
-      "description": "Let an agent sign itself up, or move an existing AgentMail integration over.",
-      "skills": ["machinemail-agent-signup", "machinemail-agentmail-migration"]
+      "title": "Everyday tasks",
+      "description": "Read mail safely with trust reports, receive sign-up codes, triage an inbox, and reply or draft for review.",
+      "skills": ["read-email-safely", "receive-verification-code", "triage-inbox", "reply-and-draft"]
+    },
+    {
+      "title": "Migrate",
+      "description": "Move an existing AgentMail integration to MachineMail.",
+      "skills": ["machinemail-agentmail-migration"]
     }
   ],
   "notGrouped": "bottom"
