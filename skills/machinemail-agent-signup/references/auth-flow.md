@@ -34,7 +34,7 @@ A `401` from `/v0` carries `WWW-Authenticate: Bearer resource_metadata="..."` po
 
 - `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer`
 - `assertion=<identity_assertion>`
-- `resource=<resource>` (optional): the root `resource` from `/.well-known/oauth-protected-resource`, `https://api.machinemail.dev/`. Any other value returns `invalid_target`. The root token works on both `/v0` and MCP.
+- `resource=<resource>` (optional): the root `resource` from `/.well-known/oauth-protected-resource` (currently `https://machinemail.dev/`). Any other value returns `invalid_target`. The root token works on both `/v0` and MCP.
 
 Access tokens last 3600 seconds. No refresh token is issued; exchange the assertion again. The assertion expires after 24 hours, and never outlasts an unclaimed registration's claim window.
 

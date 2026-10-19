@@ -48,7 +48,7 @@ If it returns `{ "timed_out": true }`, call it again with the same `after`. Two 
 A code is only worth using if it came from the service you signed up with. Check all of these in the returned message:
 
 1. `trust.level` is `verified` or `known`. Do not use a code from `unknown`, `suspicious` or `quarantined` mail yourself.
-2. `trust.authentication.dmarc` is `pass` and `trust.authentication.aligned` is `true`. A `known` level only means that at least one authentication check passed, possibly for a different domain than the one in `From`, so it does not prove who sent the mail on its own.
+2. `trust.authentication.dmarc` is `pass`, or `dmarc` is `none` with `trust.authentication.dkim` `pass` (a domain without a DMARC policy), and `trust.authentication.aligned` is `true`. A `known` level only means that at least one authentication check passed, possibly for a different domain than the one in `From`, so it does not prove who sent the mail on its own.
 3. `trust.sender.domain` is the domain of the service you signed up with, for example `github.com` for GitHub. An aligned DMARC pass proves the mail came from that domain, not that it is the domain you meant.
 4. `trust.classification.category` is `otp` for codes and magic sign-in links. Other categories, such as `transactional`, can still carry a confirmation link, so treat this as a hint, not a gate.
 

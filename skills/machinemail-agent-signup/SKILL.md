@@ -42,7 +42,7 @@ curl -s -X POST https://api.machinemail.dev/oauth2/token \
   --data-urlencode "resource=$RESOURCE"
 ```
 
-`$RESOURCE` is the root `resource` from `https://api.machinemail.dev/.well-known/oauth-protected-resource` (`https://api.machinemail.dev/`), or leave the parameter out: it is optional, and any other value returns `invalid_target`. The same root token works on both the REST API (`/v0`) and MCP. It lasts 3600 seconds. There is no refresh token: when it expires, exchange the assertion again, until the assertion itself expires after 24 hours.
+`$RESOURCE` is the root `resource` from `https://api.machinemail.dev/.well-known/oauth-protected-resource` (currently `https://machinemail.dev/`; take it from that response), or leave the parameter out: it is optional, and any other value returns `invalid_target`. The same root token works on both the REST API (`/v0`) and MCP. It lasts 3600 seconds. There is no refresh token: when it expires, exchange the assertion again, until the assertion itself expires after 24 hours.
 
 ## 3. Use the inbox
 
