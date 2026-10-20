@@ -7,7 +7,9 @@ Source: https://machinemail.dev/docs/getting-started/from-agentmail and https://
 - What MachineMail adds
 - What is different
 - Not available yet (404)
-- Moving existing mail
+- Importing settings
+- Lists after an import
+- Cutover by hand
 
 ## What carries over
 
@@ -66,11 +68,47 @@ AgentMail clients ignore unknown fields, so these do not break anything.
 - `POST /v0/inboxes/{inbox_id}/authorize`
 - Attachment downloads through threads and drafts. Fetch attachments through the message instead.
 
-## Moving existing mail
+## Importing settings
 
-There is no importer. AgentMail data, and addresses on AgentMail's own domain, stay with AgentMail.
+`machinemail import agentmail` (the MachineMail CLI, also `mm`) copies an AgentMail account's settings into a MachineMail organization. It runs on the user's machine, reads AgentMail with the user's AgentMail key, and writes through the public API with the MachineMail key. The AgentMail key is sent only to AgentMail, and nothing at AgentMail changes. Docs: https://machinemail.dev/docs/getting-started/from-agentmail#import-your-settings and https://machinemail.dev/docs/cli/commands/import.
 
-1. Create the new inboxes on MachineMail, on `machinemail.dev` or your own domain.
-2. For a custom domain, add it to MachineMail and switch its MX, SPF and DKIM records to the ones MachineMail gives you (https://machinemail.dev/docs/guides/custom-domain).
-3. Recreate webhooks; each gets a new `secret`.
-4. Keep the old AgentMail inboxes readable until in-flight threads are finished.
+1. Install the CLI (`curl -fsSL https://machinemail.dev/install.sh | sh`; public releases are not published yet, see https://machinemail.dev/docs/cli/installation) and run `machinemail login`. Use an organization key, or a pod key to import into one pod.
+2. Create an AgentMail key with `inbox_read`, `pod_read`, `domain_read`, `webhook_read`, `list_entry_read` and `api_key_read`, and a short expiry. Give it through `AGENTMAIL_API_KEY`, `--key-file <path|->` or the hidden prompt; it is never accepted as an argument. A pod-scoped key imports only that pod, an inbox-scoped key only that inbox.
+3. `machinemail import agentmail --dry-run` prints what the key can see and the plan, and writes nothing.
+4. `machinemail import agentmail` asks, then creates. It writes the ID map (`agentmail-import-map.json` and `.csv`, or `--map-file`) and prints the cutover checklist.
+
+Region: `am_us_` keys read `api.agentmail.to`, `am_eu_` keys read `api.agentmail.eu`; `--region us|eu` overrides. MachineMail stores data in the United States, so an EU organization's settings and future mail leave the EU. The CLI warns about this; make sure the user has decided.
+
+Re-runs are safe: each object carries a `client_id` (AgentMail's own, or `am:<agentmail id>`), so a second run creates nothing, and after a partial failure it fills the gaps. An address that already exists in the organization and was not imported is never taken over; use `--rename` or `--skip`.
+
+| AgentMail | On MachineMail |
+|---|---|
+| Pods | Name and `client_id`. The Default Pod maps to the default pod. |
+| Custom domains | Added with new DNS records to publish. The CLI does not touch DNS. |
+| Inboxes | Display name, metadata, `client_id`, status and pod. Custom-domain addresses keep their address. |
+| `@agentmail.to` inboxes | Same name on `machinemail.dev`, a suffixed name when taken or reserved, `--rename old=new` to choose, `--skip` to leave out. |
+| Allow and block lists | Every entry at organization, pod and inbox level. Read-only entries AgentMail manages are not imported. |
+| Webhooks | URL, event types, pod and inbox filters, `client_id`. Created disabled with a new secret. A webhook filtered on both pods and inboxes becomes two. `message.opened`, `message.security.*` and `calendar.event.*` are dropped. |
+
+Imported inboxes are created with `import_source: "agentmail"`, so their `inbox.created` events are logged but not sent to webhooks.
+
+Not imported: mail (threads, messages, drafts, attachments), API keys (listed with name, scope and permissions to recreate), webhook secrets, custom header values (MachineMail sends no custom headers; the report lists the header names), polling webhooks, read-only list entries, and settings with no equivalent such as Agent Armor mode and open tracking.
+
+The command checks plan limits before writing anything and stops when the import does not fit (custom domains beyond the Free plan, or more than 1,000 `machinemail.dev` inboxes). Exit codes: 0 done, 1 plan limit or some items failed, 2 usage error, 3 key refused or not allowed to import, 5 or 6 AgentMail rate limiting or unreachable, 130 interrupted.
+
+## Lists after an import
+
+- AgentMail uses the narrowest level with a match. MachineMail combines organization, pod and inbox entries: an allow match beats a block match, and any allow entry makes that direction allow-only.
+- At most 500 entries per direction across the organization, all levels and list types together.
+- Receive lists also apply to replies. Reply lists are stored but not applied yet.
+- Mail from a blocked sender is stored with the `BLOCKED` label and withheld from agents, not rejected.
+
+## Cutover by hand
+
+The importer does not do these:
+
+1. **DNS, per custom domain.** Publish the DKIM, MAIL FROM, SPF and DMARC records the CLI printed (merge into an existing SPF record; keep an existing DMARC record). Lower the MX TTL, then replace AgentMail's MX with MachineMail's in one change. Never publish both. Mail keeps going to AgentMail until MX changes. Then wait for `VERIFIED` (`machinemail domains get <domain-id>`). Guide: https://machinemail.dev/docs/guides/custom-domain
+2. **Stored ids.** Pods, domains, webhooks and renamed inboxes have new ids; update code and config from the ID map. Old `@agentmail.to` addresses keep receiving at AgentMail and nothing forwards them, so tell correspondents.
+3. **Webhooks.** Switch receivers to `X-MachineMail-Signature`, read each new secret with `machinemail webhooks get <webhook-id>`, then `machinemail webhooks update <webhook-id> --enabled`. Leave off any that were disabled at AgentMail.
+4. **API keys.** Create MachineMail keys to match the ones the report lists, and change the base URL in code.
+5. **Mail history** stays at AgentMail. Keep that account readable until in-flight threads finish, then revoke the AgentMail key used for the import.

@@ -66,7 +66,7 @@ Useful flags: `-g` installs for your user rather than the project, `-a claude-co
 
 | Skill | Use it when |
 |---|---|
-| [`machinemail-agentmail-migration`](skills/machinemail-agentmail-migration/SKILL.md) | Moving an AgentMail integration to MachineMail: base URL and key, webhook signatures, MCP tool names, agent sign-up, and the endpoints that differ. |
+| [`machinemail-agentmail-migration`](skills/machinemail-agentmail-migration/SKILL.md) | Moving an AgentMail integration to MachineMail: copying pods, domains, inboxes, lists and webhooks with `machinemail import agentmail`, then base URL and key, webhook signatures, MCP tool names, agent sign-up, and the endpoints that differ. |
 
 The everyday task skills are written for the MCP tools and point to `machinemail` for the REST API and the full trust reference.
 
